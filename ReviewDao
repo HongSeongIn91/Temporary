@@ -166,9 +166,13 @@ public class ReviewDao {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try {
-			pstmt = conn.prepareStatement("select rv.*, mv.mv_title "
+
+			pstmt = conn.prepareStatement(
+					"select rv.*, mv.mv_title "
 					+ "from review rv, movie_info mv "
-					+ "where rv.rv_mv_num=mv.mv_num and rv.rv_num = ?");
+					+ "where rv.rv_mv_num=mv.mv_num and rv.rv_num = ?"
+					);
+
 			pstmt.setInt(1, rv_num);
 			rs = pstmt.executeQuery();
 			Review review = null;
@@ -213,10 +217,16 @@ public class ReviewDao {
 		try {
 			pstmt = conn.prepareStatement(
 					"SELECT * FROM ("
-					+ "SELECT ROWNUM AS rnum, A.* FROM ("
-					+ "SELECT * FROM REVIEW WHERE RV_M_ID= ? ORDER BY RV_NUM DESC"
-					+ ") A WHERE ROWNUM <= ?"
-					+ ") WHERE RNUM >= ?"
+
+							+"SELECT ROWNUM AS rnum, A.* FROM ("
+							+"SELECT rv.*, mv.mv_title "
+							+"FROM movie_info mv "
+							+"INNER JOIN review rv "
+							+"ON (mv.mv_num = rv.rv_mv_num) "
+							+"WHERE rv.rv_m_id = ? ORDER BY rv.rv_num DESC) A "
+							+"WHERE ROWNUM <= ?) "
+							+"WHERE RNUM >= ?"
+
 					);
 			
 			pstmt.setString(1, rv_m_id);
@@ -289,6 +299,7 @@ public class ReviewDao {
 			sql += " order by rv_num desc";
 
 			//System.out.println("sql2" + sql);
+
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery(sql);
 			if (rs.next()) {
@@ -299,10 +310,9 @@ public class ReviewDao {
 			JdbcUtil.close(rs);
 			JdbcUtil.close(stmt);
 		}
-	}
-		
 
-	//조회를하는데,, 소팅기준으로
+	}
+
 	public List<Review> selectSearch(Connection conn, int startRow, int size,
 			String keyField, String keyWord, String reviewSort) throws SQLException {
 		Statement stmt = null;

@@ -1,0 +1,81 @@
+package member.command;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import member.service.DuplicateIdException;
+import member.service.JoinRequest;
+import member.service.JoinService;
+import mvc.command.CommandHandler;
+
+public class JoinHandler implements CommandHandler {
+
+	// FORM_VIEW는 사용자로부터 데이터를 POST방식으로 입력받기 위한 VIEW이다. 입력받은 데이터는 processSubmit() 메서드를 수행하는 데에 사용된다.
+	private static final String FORM_VIEW = "/WEB-INF/view/joinForm.jsp";
+	private JoinService joinService = new JoinService();
+	
+	@Override
+	// request 요청방식이 GET방식이면 processForm을 실행, POST방식이면 processSubmit을 실행
+	public String process(HttpServletRequest req, HttpServletResponse res)
+			throws Exception {
+		if(req.getMethod().equalsIgnoreCase("GET")) {
+			return processForm(req, res);
+		} else if(req.getMethod().equalsIgnoreCase("POST")) {
+			return processSubmit(req, res);
+		} else {
+			res.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+			return null;
+		}
+	}
+	
+	// processSubmit() >> JoinService.java를 호출 >> joinSuccess.jsp와 연결 (에러혹은 exception시 FORM_VIEW)    
+	private String processSubmit(HttpServletRequest req, HttpServletResponse res) throws ClassNotFoundException, NamingException {
+		// JoinRequest 객체를 만들어서 req 내의 파라미터 값들을 저장한다.
+		JoinRequest joinReq = new JoinRequest();
+		joinReq.setM_id(req.getParameter("m_id"));
+		joinReq.setM_pw(req.getParameter("m_pw"));
+		joinReq.setM_birth(req.getParameter("m_birth"));
+		joinReq.setM_gender(req.getParameter("m_gender"));
+		/*joinReq.setM_regnum(req.getParameter("m_regnum"));*/
+		joinReq.setM_email(req.getParameter("m_email"));
+		joinReq.setM_phone(req.getParameter("m_phone"));
+		joinReq.setConfirmPassword(req.getParameter("confirmPassword"));
+		
+		System.out.println("JoinHandler_req.getParameter(m_birth)="+req.getParameter("m_birth"));
+		System.out.println("JoinHandler_joinReq.getM_birth="+joinReq.getM_birth());
+		
+		// 데이터 타입이 Map인 errors 객체를 만들고, *.jsp에서 사용하기 위해 request 기본객체(req)에 errors 이름으로 속성을 세팅한다.(.setAttribute)
+		Map<String, Boolean> errors = new HashMap<String, Boolean>();
+		req.setAttribute("errors", errors);
+		
+		// JoinRequest.java에서 errors 요인 검사.  
+		joinReq.validate(errors);
+		
+		// errors 객체가 비어있지 않다면 FORM_VIEW를 리턴한다. 즉, 문제가 있다는 뜻이다.
+		if(!errors.isEmpty()) {
+			return FORM_VIEW;
+		}
+		
+		// joinService 객체의 join() 메서드를 실행하고 정상적으로 수행될 경우 joinSuccess.jsp를 return한다.
+		try {
+			joinService.join(joinReq);
+			return "/WEB-INF/view/joinSuccess.jsp";
+		// 그렇지 않을 경우 FORM_VIEW를 리턴한다.
+		} catch (DuplicateIdException e) {
+			errors.put("duplicateId", Boolean.TRUE);
+			return FORM_VIEW;
+		}
+		
+	}
+
+	// processForm() >> FORM_VIEW 리턴 (>> "/WEB-INF/view/joinForm.jsp" 으로 이동)
+	private String processForm(HttpServletRequest req, HttpServletResponse res) {
+		
+		return FORM_VIEW;
+	}
+
+}
