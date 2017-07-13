@@ -17,7 +17,7 @@ import mvc.command.CommandHandler;
 public class WithdrawHandler implements CommandHandler {
 
 	private static final String FORM_VIEW = "/WEB-INF/view/withdrawForm.jsp";
-	
+
 	private CheckPwdService checkPwdSvc = new CheckPwdService();
 	private WithdrawService withdrawSvc = new WithdrawService();
 	
@@ -52,7 +52,7 @@ public class WithdrawHandler implements CommandHandler {
 		try {
 			checkPwdSvc.checkPassword(user.getId(), password);
 			withdrawSvc.withdraw(user.getId());
-		
+
 			HttpSession session = req.getSession(false);
 			if(session != null) {
 				session.invalidate();
