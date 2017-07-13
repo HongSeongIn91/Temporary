@@ -70,19 +70,16 @@ public class MemberDao {
 			pstmt.setString(3, member.getM_phone());
 			pstmt.setString(4, member.getM_id());
 			pstmt.executeUpdate();
-		
+
 		}
 	}
 
-	public int delete(Connection conn, String m_id) throws SQLException {
-		
-		try(PreparedStatement pstmt = conn.prepareStatement("DELETE FROM member WHERE m_id = ?")) 
-		{
-		
+	public void delete(Connection conn, String m_id) throws SQLException {
+		try (PreparedStatement pstmt = conn.prepareStatement(
+				"delete from member WHERE m_id = ?")) {
 			pstmt.setString(1, m_id);
-		
-			return pstmt.executeUpdate();
-		
+			pstmt.executeUpdate();
+
 		}
 		
 	}
