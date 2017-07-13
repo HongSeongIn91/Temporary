@@ -35,6 +35,7 @@ public class ListReviewService {
 		}
 	}
 	
+
 	public ReviewPage getMyReviewPage(int pageNum, String reviewSort, String m_id) throws ClassNotFoundException, NamingException {
 		try (Connection conn = DBConnection.getConnection()) {
 			int total = reviewDao.selectCountByMyId(conn, m_id);
@@ -55,6 +56,7 @@ public class ListReviewService {
 			
 			List<Review> content = reviewDao.selectSearch(conn, startRow, size, keyField, keyWord, reviewSort);
 			
+
 			return new SearchPage(total, pageNum, size, content);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
@@ -65,6 +67,7 @@ public class ListReviewService {
 		
 		try (Connection conn = DBConnection.getConnection()) {
 			int return_total = total - (pageNum - 1)*size;
+
 			return return_total;
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
