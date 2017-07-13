@@ -166,11 +166,13 @@ public class ReviewDao {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try {
+
 			pstmt = conn.prepareStatement(
 					"select rv.*, mv.mv_title "
 					+ "from review rv, movie_info mv "
 					+ "where rv.rv_mv_num=mv.mv_num and rv.rv_num = ?"
 					);
+
 			pstmt.setInt(1, rv_num);
 			rs = pstmt.executeQuery();
 			Review review = null;
@@ -215,6 +217,7 @@ public class ReviewDao {
 		try {
 			pstmt = conn.prepareStatement(
 					"SELECT * FROM ("
+
 							+"SELECT ROWNUM AS rnum, A.* FROM ("
 							+"SELECT rv.*, mv.mv_title "
 							+"FROM movie_info mv "
@@ -223,6 +226,7 @@ public class ReviewDao {
 							+"WHERE rv.rv_m_id = ? ORDER BY rv.rv_num DESC) A "
 							+"WHERE ROWNUM <= ?) "
 							+"WHERE RNUM >= ?"
+
 					);
 			
 			pstmt.setString(1, rv_m_id);
@@ -280,18 +284,22 @@ public class ReviewDao {
 			String keyWord) throws SQLException {
 		Statement stmt = null;
 		ResultSet rs = null;
-		
-		String sql = "select count(*) from review rv, review_content rvc, Movie_info mv where rv.rv_num = rvc.rvc_rv_num and rv.rv_mv_num = mv.mv_num";
-		if (keyWord != null && !keyWord.equals("")) {
-			if(keyField.equals("total"))
-				sql += " and (rvc_content like '%" + keyWord
-						+ "%' or rv_title like '%" + keyWord + "%')";
-		} else {
-			sql += " and " + keyField + " LIKE '%" + keyWord + "%'";
-		}
-		sql += " order by rv_num desc";
-		
+
 		try {
+			String sql = "select count(*) from  review rv, review_content rvc, Movie_info mv where rv.rv_num = rvc.rvc_rv_num and rv.rv_mv_num = mv.mv_num";
+
+			if (keyWord != null && !keyWord.equals("")) { // 값이 있는 경우
+				if (keyField.equals("total")) {
+					sql += " and (rvc_content like '%" + keyWord
+							+ "%' or rv_title like '%" + keyWord + "%')";
+				} else {
+					sql += " and " + keyField + " LIKE '%" + keyWord + "%'";
+				}
+			}
+			sql += " order by rv_num desc";
+
+			//System.out.println("sql2" + sql);
+
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery(sql);
 			if (rs.next()) {
@@ -302,7 +310,7 @@ public class ReviewDao {
 			JdbcUtil.close(rs);
 			JdbcUtil.close(stmt);
 		}
-		
+
 	}
 
 	public List<Review> selectSearch(Connection conn, int startRow, int size,
