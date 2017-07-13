@@ -70,6 +70,7 @@ public class MemberDao {
 			pstmt.setString(3, member.getM_phone());
 			pstmt.setString(4, member.getM_id());
 			pstmt.executeUpdate();
+
 		}
 	}
 
@@ -78,6 +79,7 @@ public class MemberDao {
 				"delete from member WHERE m_id = ?")) {
 			pstmt.setString(1, m_id);
 			pstmt.executeUpdate();
+
 		}
 		
 	}
