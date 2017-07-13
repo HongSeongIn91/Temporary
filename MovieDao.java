@@ -77,10 +77,12 @@ public class MovieDao {
 		List<Movie> result = new ArrayList<Movie>();
 		
 		String sql = "SELECT * FROM (SELECT ROWNUM AS rnum, A.* FROM (";
+
 		if (movieSort.equals("mv_reldate")) {
 			sql += "SELECT * FROM Movie_info ORDER BY mv_reldate desc";
 		} else {
 			sql += "SELECT * FROM Movie_info ORDER BY mv_readcnt desc";
+
 		}
 		sql += ") A WHERE ROWNUM <= ?) WHERE RNUM >= ?";
 		
@@ -101,7 +103,6 @@ public class MovieDao {
 			JdbcUtil.close(pstmt);
 		}
 	}
-	
 
 	//개봉후 영화 셀렉트
 		public List<Movie> relAfterSelect(Connection conn, int startRow, int size) throws SQLException {
@@ -112,7 +113,9 @@ public class MovieDao {
 				// 페이징처리
 				pstmt = conn.prepareStatement("SELECT * FROM ("
 						+ "SELECT ROWNUM AS rnum, A.* FROM ("
+
 						+ "SELECT * FROM Movie_info WHERE mv_reldate <= sysdate ORDER BY mv_reldate desc"
+
 						+ ") A WHERE ROWNUM <= ?" + ") WHERE RNUM >= ?");
 				/*
 				 * SELECT * FROM (SELECT ROWNUM AS rnum, A.* FROM (SELECT * FROM
@@ -146,9 +149,10 @@ public class MovieDao {
 			// 페이징처리
 			pstmt = conn.prepareStatement("SELECT * FROM ("
 					+ "SELECT ROWNUM AS rnum, A.* FROM ("
+
 					+ "SELECT * FROM Movie_info WHERE mv_reldate > sysdate ORDER BY mv_reldate"
 					+ ") A WHERE ROWNUM <= ?" + ") WHERE RNUM >= ?");
-			
+
 			pstmt.setInt(1, startRow + size - 1);
 			// pstmt.setInt(1, startRow + size); //21+10-1 -> 30
 			pstmt.setInt(2, startRow); // 21
@@ -218,6 +222,7 @@ public class MovieDao {
 		try {
 		
 			pstmt = conn.prepareStatement("SELECT * FROM MOVIE_INFO WHERE mv_reldate <= sysdate order by mv_reldate desc");
+
 			rs = pstmt.executeQuery();
 
 			// 목록리스트를 Arraylist에 담는다
