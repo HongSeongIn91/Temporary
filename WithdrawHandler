@@ -1,0 +1,79 @@
+package member.command;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import auth.service.User;
+import member.service.CheckPwdService;
+import member.service.WithdrawService;
+import mvc.command.CommandHandler;
+
+public class WithdrawHandler implements CommandHandler {
+
+	private static final String FORM_VIEW = "/WEB-INF/view/withdrawForm.jsp";
+	private CheckPwdService checkPwdSvc = new CheckPwdService();
+	private WithdrawService withdrawSvc = new WithdrawService();
+	
+	@Override
+	public String process(HttpServletRequest req, HttpServletResponse res)
+			throws Exception {
+		if(req.getMethod().equalsIgnoreCase("GET")) {
+			return processForm(req, res);
+		} else if(req.getMethod().equalsIgnoreCase("POST")) {
+			return processSubmit(req, res);
+		} else {
+			res.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+			return null;
+		}
+	}
+
+	private String processSubmit(HttpServletRequest req, HttpServletResponse res) throws ClassNotFoundException, NamingException, IOException {
+
+		String password = trim(req.getParameter("m_pw"));
+		
+		User user = (User)req.getSession().getAttribute("authUser");
+		
+		Map<String, Boolean> errors = new HashMap<String, Boolean>();
+		req.setAttribute("errors", errors);
+		
+		if(password==null || password.isEmpty())
+			errors.put("m_pw", Boolean.TRUE);
+		if(!errors.isEmpty()){
+			return FORM_VIEW;
+		}
+		
+		try {
+			checkPwdSvc.checkPassword(user.getId(), password);
+			withdrawSvc.withdraw(user.getId());
+			
+			HttpSession session = req.getSession(false);
+			if(session != null) {
+				session.invalidate();
+			}
+			res.sendRedirect(req.getContextPath()+"/index.jsp");
+			return null;
+			
+		}	catch (Exception e) {
+			errors.put("PwNotMatch", Boolean.TRUE);
+			return FORM_VIEW;
+		}
+		
+	}
+
+	private String processForm(HttpServletRequest req, HttpServletResponse res) {
+		
+		return FORM_VIEW;
+	}
+	
+	private String trim(String str) {
+		
+		return str == null ? null : str.trim();
+	}
+
+}
